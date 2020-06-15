@@ -33,31 +33,18 @@ const scrapeData = async (page) => {
         return comicsData;
     });
 
+    // should it be in main?
     const data = comicsData.map(data => {
         const { title, NSFW, image_src, likes, info } = data;
         const { date, time, author } = parseInfo(info);
 
         return { title, NSFW, image_src, likes, date, time, author };
     });
-    
-    console.log(data)
     return data;
-};
-
-const paginate = async (page, nextPage, history) => {
-    await page.goto(nextPage, {waitUntil: 'networkidle2'});
-
-    const data = await scrapeData(page);
-    history.push(...data);
-
-    nextPage = await getNextPage(page);
-
-    return nextPage ? await paginate(page, nextPage, history) : history;
 };
 
 
 module.exports = {
     getNextPage,
-    scrapeData,
-    paginate
+    scrapeData
 };

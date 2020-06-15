@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
-const { paginate } = require("./src/scrape");
+const { getNextPage, scrapeData } = require("./src/scrape");
 const { initOutputDirectory, downloadAndSaveImage } = require("./src/io");
-const { getURL, parseInfo } = require("./src/utils");
+const { getURL, constructFileName } = require("./src/utils");
 
 
 const START_PAGE = 1;
@@ -15,11 +15,26 @@ const OUTPUT_DIRECTORY = "komixxy";
     });
     const page = await browser.newPage();
 
-    // scrape
-    const data = await paginate(page, getURL(START_PAGE), []);
-    
-    // io
+    // scrape and save
     initOutputDirectory(OUTPUT_DIRECTORY);
+    
+    const paginate = async (page, nextPage) => {
+        await page.goto(nextPage, {waitUntil: 'networkidle2'});
+    
+        const data = await scrapeData(page);
+        data.forEach(async entry => {
+            const image_url = entry.image_src;
+            const fileName = constructFileName(entry);
+            await downloadAndSaveImage(image_url, fileName, OUTPUT_DIRECTORY);
+        });
+        console.log("\x1b[32m%s\x1b[0m", `#${nextPage.split("/").pop()} page scraped and saved!`);
+
+        nextPage = await getNextPage(page);
+    
+        if(nextPage) await paginate(page, nextPage);
+    };
+    await paginate(page, getURL(START_PAGE));
+
 
     await browser.close();
 })();

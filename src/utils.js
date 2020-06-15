@@ -17,19 +17,29 @@ const parseDate = (date) => {
 
 const parseInfo = (info) => {
     info = info.split(" | ")[0].replace("Wrzucone ", "").replace(" (PW)", "");
-    info = info.replace("konto usunięte", "<DELETED_USER>");
+    info = info.replace("konto usunięte", "_DELETED_USER_");
     
     const [date, timeAndAuthor] = info.split(" o ");
     const [time, author] = timeAndAuthor.split(" przez ");
 
     const parsedDate = parseDate(date);
+    const parsedTime = time.replace(":", ".");
 
-    return { date: parsedDate, time, author };
+    return { date: parsedDate, time: parsedTime, author };
+};
+
+const constructFileName = (data) => {
+    const { title, NSFW, likes, date, time, author } = data;
+    
+    const name = `'${title.replace("/", "-")}' by ${author} ${date}-${time} (${likes} likes)${NSFW ? " NSFW": ""}.jpg`;
+    const sanitizedName = name.replace(/\<|\>|\:|\"|\/|\\|\||\?|\*/g, "$");
+
+    return sanitizedName;
 };
 
 
 module.exports = {
     getURL,
-    parseDate,
-    parseInfo
+    parseInfo,
+    constructFileName
 };

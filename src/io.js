@@ -6,12 +6,13 @@ const axios = require("axios");
 const initOutputDirectory = (directory) => {
     if(!fs.existsSync(directory)){
         fs.mkdirSync(directory);
-        Logger.success(`Output directory '${directory}' created!`);
+        console.log("\x1b[32m%s\x1b[0m", `Output directory '${directory}' created!`);
     }
 };
 
-const downloadAndSaveImage = async (url, name) => {  
-    const src = path.resolve(__dirname, "komixxy", name);
+const downloadAndSaveImage = async (url, name, outputDirectory) => {  
+    const src = path.resolve(outputDirectory, name);
+    console.log("\x1b[33m%s\x1b[0m", `Saving...\n"${src}"`);
     const writer = fs.createWriteStream(src);
     
     const response = await axios({
@@ -25,7 +26,7 @@ const downloadAndSaveImage = async (url, name) => {
     return new Promise((resolve, reject) => {
         writer.on("finish", resolve);
         writer.on("error", reject);
-    })
+    });
 };
 
 
